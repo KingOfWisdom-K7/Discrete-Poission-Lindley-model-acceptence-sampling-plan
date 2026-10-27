@@ -117,7 +117,7 @@
                     </select>
                 </div>
                 <div class="input-group">
-                    <label for="t-mu">Test Ratio (t/σ₀):</label>
+                    <label for="t-mu">Test Ratio (t/μ₀):</label>
                     <select id="t-mu" class="rounded-lg">
                         <option value="1">1</option>
                         <option value="1.25">1.25</option>
@@ -203,12 +203,12 @@
         // ---------------- MATHEMATICAL FUNCTIONS ----------------
 
         // CDF of Discrete Poisson-Lindley Distribution (Reverse-engineered from Eq 2.13)
-        // In the paper, the underlying parameter sigma evaluates to 0.1 to perfectly match the provided tables.
+        // In the paper, the underlying parameter mu evaluates to 0.1 to perfectly match the provided tables.
         function discretePoissonLindleyCDF(x) {
-            const sigma = 0.1;
-            // Formula: F(x) = 1 - (sigma + 1)^(-x - 3) * [1 + sigma * (sigma + x + 3)]
-            const term1 = Math.pow(sigma + 1, -x - 3);
-            const term2 = 1 + sigma * (sigma + x + 3);
+            const mu = 0.1;
+            // Formula: F(x) = 1 - (mu + 1)^(-x - 3) * [1 + mu * (mu + x + 3)]
+            const term1 = Math.pow(mu + 1, -x - 3);
+            const term2 = 1 + mu * (mu + x + 3);
             return 1 - (term1 * term2);
         }
 
@@ -224,11 +224,11 @@
         }
 
         // Poisson Cumulative Distribution Function Summation
-        function poissonCDF(mu, c) {
-            let term = Math.exp(-mu);
+        function poissonCDF(lambda, c) {
+            let term = Math.exp(-lambda);
             let sum = term;
             for (let x = 1; x <= c; x++) {
-                term = term * (mu / x);
+                term = term * (lambda / x);
                 sum += term;
             }
             return sum;
@@ -258,14 +258,14 @@
             return "Limit Exceeded";
         }
 
-        // Calculate OC values dynamically for given sigma ratios
+        // Calculate OC values dynamically for given mu ratios
         function calculateOCValues(dist, n, c, t_mu) {
-            let sigma_ratios = [2, 4, 6, 8, 10, 12];
+            let mu_ratios = [2, 4, 6, 8, 10, 12];
             let oc_vals = [];
 
-            for (let sr of sigma_ratios) {
-                // The scaled evaluation time for OC probabilities is (t/σ₀) / r
-                let x_oc = t_mu / sr;
+            for (let mr of mu_ratios) {
+                // The scaled evaluation time for OC probabilities is (t/μ₀) / r
+                let x_oc = t_mu / mr;
                 let p = discretePoissonLindleyCDF(x_oc);
                 let prob = 0;
 
@@ -284,7 +284,7 @@
 
         // ---------------- CHART LOGIC ----------------
 
-        const sigmaSigma0Headers = ["2", "4", "6", "8", "10", "12"];
+        const muMu0Headers = ["2", "4", "6", "8", "10", "12"];
         
         let charts = {};
         let combinedChart;
@@ -299,7 +299,7 @@
             return new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sigmaSigma0Headers,
+                    labels: muMu0Headers,
                     datasets: [{
                         label: 'Pa(p)',
                         data: [],
@@ -361,7 +361,7 @@
             return new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: sigmaSigma0Headers,
+                    labels: muMu0Headers,
                     datasets: [
                         { label: 'Binomial', data: [], borderColor: '#dc2626', backgroundColor: 'transparent', borderWidth: 4, pointRadius: 7, tension: 0.4 }, // Red
                         { label: 'Poisson', data: [], borderColor: '#059669', backgroundColor: 'transparent', borderWidth: 4, pointRadius: 7, tension: 0.4 }, // Green
@@ -383,7 +383,7 @@
                     layout: { padding: { right: 20 } },
                     scales: {
                         x: { 
-                            title: { display: true, text: 'σ/σ₀ Ratio', font: { size: 16, weight: 'bold' } },
+                            title: { display: true, text: 'μ/μ₀ Ratio', font: { size: 16, weight: 'bold' } },
                             grid: { display: false } // Removed gridlines
                         },
                         y: { 
